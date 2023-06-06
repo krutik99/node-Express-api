@@ -1,42 +1,45 @@
 const mongoose = require("mongoose");
 const User = require("../models/user");
-const jwt = require('jsonwebtoken');
-const JWT_SECRET = "goK!pusp6ThEdURUtRenOwUhAsWUCLheBazl!uJLPlS8EbreWLdrupIwabRAsiBu";
+const jwt = require("jsonwebtoken");
+const Categoires = require("../models/categories");
+const JWT_SECRET =
+  "goK!pusp6ThEdURUtRenOwUhAsWUCLheBazl!uJLPlS8EbreWLdrupIwabRAsiBu";
 
-const { Auth } = require("two-step-auth");
-// function login(req, res) {
-//   const { email, password } = req.body;
-//   console.log(`${email} is trying to login ..`);
+async function login(req, res) {
+  const { email, password } = req.body;
+  console.log(`${email} is trying to login ..`);
+  try {
+    let data = await User.find();
+    if (data) {
+      data.find((x) => {
+        if (x.email == email && x.password == password) {
+          res.status(200).json(data);
+        }
+      });
+    }
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
 
-//   if (email === "krutikgoyani99@gmail.com" && password === "123") {
-//     return res.json({
-//       token: jwt.sign({ user: "admin" }, JWT_SECRET),
-//     });
-//   }
+  // // User.findOne({ email: { email } }).then((docs) => {
+  // //   console.log("Result :", docs);
+  // // });
 
-//   return res
-//     .status(401)
-//     .json({ message: "The username and password your provided are invalid" });
-// }
+  // console.log("data=======", data);
 
-async function login(emailId) {
-  const res = await Auth(emailId, "Company Name");
-  console.log(res);
-  console.log(res.mail);
-  console.log(res.OTP);
-  console.log(res.success);
+  // // let datas = CateogiresData.findOne({ email: email });
+  // // console.log("datasdatasdatasdatas========", datas);
+
+  // // if (email === "krutikgoyani99@gmail.com" && password === "123") {
+  // //   return res.json({
+  // //     token: jwt.sign({ user: "admin", name: "krutik" }, JWT_SECRET),
+  // //   });
+  // // }
+
+  // return res
+  //   .status(401)
+  //   .json({ message: "The username and password your provided are invalid" });
 }
-
-// This should have less secure apps enabled
-LoginCredentials.mailID = "krutikgoyani100@gmail.com"; 
-  
-// You can store them in your env variables and
-// access them, it will work fine
-LoginCredentials.password = "okmutgbdwzgqyjpo"; 
-LoginCredentials.use = true;
-  
-// Pass in the mail ID you need to verify
-login("verificationEmail@anyDomain.com"); 
 
 function create(req, res, next) {
   let name = req.body.name;
@@ -61,4 +64,3 @@ function view(req, res, next) {
 module.exports.create = create;
 module.exports.view = view;
 module.exports.login = login;
-
