@@ -10,35 +10,20 @@ async function login(req, res) {
   console.log(`${email} is trying to login ..`);
   try {
     let data = await User.find();
+    console.log(JSON.stringify(data));
     if (data) {
       data.find((x) => {
         if (x.email == email && x.password == password) {
-          res.status(200).json(data);
+          const token = jwt.sign({ email: x.email }, "secretkeyappearshere", {
+            expiresIn: "2h",
+          });
+          res.status(200).json({ stutsCode: 200, token: token, error: 0 });
         }
       });
     }
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
-
-  // // User.findOne({ email: { email } }).then((docs) => {
-  // //   console.log("Result :", docs);
-  // // });
-
-  // console.log("data=======", data);
-
-  // // let datas = CateogiresData.findOne({ email: email });
-  // // console.log("datasdatasdatasdatas========", datas);
-
-  // // if (email === "krutikgoyani99@gmail.com" && password === "123") {
-  // //   return res.json({
-  // //     token: jwt.sign({ user: "admin", name: "krutik" }, JWT_SECRET),
-  // //   });
-  // // }
-
-  // return res
-  //   .status(401)
-  //   .json({ message: "The username and password your provided are invalid" });
 }
 
 function create(req, res, next) {
@@ -60,6 +45,31 @@ function view(req, res, next) {
     res.send(data);
   });
 }
+
+exports.update = async (req, res) => {
+  const id = req.params.id;
+
+  if (!req.body) {
+    res.status(400).send({
+      message: "Data to update can not be empty!",
+    });
+  }
+  await User.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+    .then((data) => {
+      if (!data) {
+        res.status(404).send({
+          message: `User not found.`,
+        });
+      } else {
+        res.send({ message: "User updated successfully." });
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message,
+      });
+    });
+};
 
 module.exports.create = create;
 module.exports.view = view;
