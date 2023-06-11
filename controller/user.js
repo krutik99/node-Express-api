@@ -1,42 +1,30 @@
 const mongoose = require("mongoose");
 const User = require("../models/user");
-const jwt = require('jsonwebtoken');
-const JWT_SECRET = "goK!pusp6ThEdURUtRenOwUhAsWUCLheBazl!uJLPlS8EbreWLdrupIwabRAsiBu";
+const jwt = require("jsonwebtoken");
+const Categoires = require("../models/categories");
+const JWT_SECRET =
+  "goK!pusp6ThEdURUtRenOwUhAsWUCLheBazl!uJLPlS8EbreWLdrupIwabRAsiBu";
 
-const { Auth } = require("two-step-auth");
-// function login(req, res) {
-//   const { email, password } = req.body;
-//   console.log(`${email} is trying to login ..`);
-
-//   if (email === "krutikgoyani99@gmail.com" && password === "123") {
-//     return res.json({
-//       token: jwt.sign({ user: "admin" }, JWT_SECRET),
-//     });
-//   }
-
-//   return res
-//     .status(401)
-//     .json({ message: "The username and password your provided are invalid" });
-// }
-
-async function login(emailId) {
-  const res = await Auth(emailId, "Company Name");
-  console.log(res);
-  console.log(res.mail);
-  console.log(res.OTP);
-  console.log(res.success);
+async function login(req, res) {
+  const { email, password } = req.body;
+  console.log(`${email} is trying to login ..`);
+  try {
+    let data = await User.find();
+    console.log(JSON.stringify(data));
+    if (data) {
+      data.find((x) => {
+        if (x.email == email && x.password == password) {
+          const token = jwt.sign({ email: x.email }, "secretkeyappearshere", {
+            expiresIn: "2h",
+          });
+          res.status(200).json({ stutsCode: 200, token: token, error: 0 });
+        }
+      });
+    }
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
 }
-
-// This should have less secure apps enabled
-LoginCredentials.mailID = "krutikgoyani100@gmail.com"; 
-  
-// You can store them in your env variables and
-// access them, it will work fine
-LoginCredentials.password = "okmutgbdwzgqyjpo"; 
-LoginCredentials.use = true;
-  
-// Pass in the mail ID you need to verify
-login("verificationEmail@anyDomain.com"); 
 
 function create(req, res, next) {
   let name = req.body.name;
@@ -58,7 +46,31 @@ function view(req, res, next) {
   });
 }
 
+exports.update = async (req, res) => {
+  const id = req.params.id;
+
+  if (!req.body) {
+    res.status(400).send({
+      message: "Data to update can not be empty!",
+    });
+  }
+  await User.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+    .then((data) => {
+      if (!data) {
+        res.status(404).send({
+          message: `User not found.`,
+        });
+      } else {
+        res.send({ message: "User updated successfully." });
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message,
+      });
+    });
+};
+
 module.exports.create = create;
 module.exports.view = view;
 module.exports.login = login;
-
